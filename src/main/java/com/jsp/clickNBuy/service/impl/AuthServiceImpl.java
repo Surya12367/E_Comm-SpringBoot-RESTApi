@@ -1,7 +1,9 @@
 package com.jsp.clickNBuy.service.impl;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.InputMismatchException;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeoutException;
 
@@ -9,7 +11,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.jsp.clickNBuy.dao.UserDao;
+import com.jsp.clickNBuy.dto.LoginDto;
 import com.jsp.clickNBuy.dto.OtpDto;
+import com.jsp.clickNBuy.dto.PasswordDto;
 import com.jsp.clickNBuy.dto.ResponseDto;
 import com.jsp.clickNBuy.dto.UserDto;
 import com.jsp.clickNBuy.entity.Role;
@@ -32,9 +36,10 @@ public class AuthServiceImpl implements AuthService{
 		if (userDao.isEmailUnique(userDto.getEmail()) && userDao.isMobileUnique(userDto.getMobile())) {
 			int otp = new Random().nextInt(100000, 1000000);
 			emailSender.sendOtp(userDto.getEmail(), otp, userDto.getName());
-			userDao.saveUser(new User(null, userDto.getName(), userDto.getEmail(),
-					encoder.encode(userDto.getPassword()), userDto.getMobile(), null, otp,
-					LocalDateTime.now().plusMinutes(5), Role.valueOf("ROLE_" + userDto.getRole().toUpperCase()), false));
+			userDao.saveUser(
+					new User(null, userDto.getName(), userDto.getEmail(), encoder.encode(userDto.getPassword()),
+							userDto.getMobile(), null, otp, LocalDateTime.now().plusMinutes(5),
+							Role.valueOf("ROLE_" + userDto.getRole().toUpperCase()), false));
 			return new ResponseDto("Otp Sent Success, Verify within 5 minutes", userDto);
 		} else {
 			if (!userDao.isEmailUnique(userDto.getEmail()))
@@ -46,9 +51,9 @@ public class AuthServiceImpl implements AuthService{
 	
 	@Override
 	public ResponseDto verifyOtp(OtpDto otpDto) throws TimeoutException {
-		User user=userDao.findByEmail(otpDto.getEmail());
-		if(LocalDateTime.now().isBefore(user.getOtpExpiryTime())) {
-			if(otpDto.getOtp()==user.getOtp()) {
+		User user = userDao.findByEmail(otpDto.getEmail());
+		if (LocalDateTime.now().isBefore(user.getOtpExpiryTime())) {
+			if (otpDto.getOtp() == user.getOtp()) {
 				user.setStatus(true);
 				user.setOtp(0);
 				user.setOtpExpiryTime(null);
@@ -61,5 +66,52 @@ public class AuthServiceImpl implements AuthService{
 			throw new TimeoutException("Otp Expired, Resend Otp and Try Again");
 		}
 	}
+	@Override
+	public ResponseDto resendOtp(String email) {
+		User user = userDao.findByEmail(email);
+		int otp = new Random().nextInt(100000, 1000000);
+		emailSender.sendOtp(user.getEmail(), otp, user.getName());
+		user.setOtp(otp);
+		user.setOtpExpiryTime(LocalDateTime.now().plusMinutes(5));
+		userDao.saveUser(user);
+		Map<String, String> map = new HashMap<String, String>();
+		map.put("email", email);
+		return new ResponseDto("Otp Resent Success valid only for 5 minutes", map);
+	}
 
+	@Override
+	public ResponseDto forgotPassword(String email) {
+		User user = userDao.findByEmail(email);
+		int otp = new Random().nextInt(100000, 1000000);
+		emailSender.sendForgotOtp(user.getEmail(), otp, user.getName());
+		user.setOtp(otp);
+		user.setOtpExpiryTime(LocalDateTime.now().plusMinutes(5));
+		userDao.saveUser(user);
+		Map<String, String> map = new HashMap<String, String>();
+		map.put("email", email);
+		return new ResponseDto("Otp Sent Success valid only for 5 minutes", map);
+	}
+
+	@Override
+	public ResponseDto forgotPassword(PasswordDto passwordDto) throws TimeoutException {
+		User user = userDao.findByEmail(passwordDto.getEmail());
+		if (LocalDateTime.now().isBefore(user.getOtpExpiryTime())) {
+			if (passwordDto.getOtp() == user.getOtp()) {
+				user.setPassword(encoder.encode(passwordDto.getPassword()));
+				user.setOtp(0);
+				user.setOtpExpiryTime(null);
+				userDao.saveUser(user);
+				return new ResponseDto("Password Updated Success", user);
+			} else {
+				throw new InputMismatchException("Otp miss match, Try Again");
+			}
+		} else {
+			throw new TimeoutException("Otp Expired, Resend Otp and Try Again");
+		}
+	}
+
+	@Override
+	public ResponseDto login(LoginDto loginDto) {
+		return new ResponseDto("Login Success", loginDto);
+	}
 }
