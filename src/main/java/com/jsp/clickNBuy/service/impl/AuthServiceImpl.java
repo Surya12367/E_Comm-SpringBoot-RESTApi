@@ -33,7 +33,7 @@ public class AuthServiceImpl implements AuthService{
 
 	@Override
 	public ResponseDto register(UserDto userDto) {
-		if (userDao.isEmailUnique(userDto.getEmail()) && userDao.isMobileUnique(userDto.getMobile())) {
+		if (userDao.isEmailAndMobileUnique(userDto.getEmail(), userDto.getMobile())) {
 			int otp = new Random().nextInt(100000, 1000000);
 			emailSender.sendOtp(userDto.getEmail(), otp, userDto.getName());
 			userDao.saveUser(
