@@ -7,6 +7,11 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +24,7 @@ import com.jsp.clickNBuy.dto.UserDto;
 import com.jsp.clickNBuy.entity.Role;
 import com.jsp.clickNBuy.entity.User;
 import com.jsp.clickNBuy.exception.DataExistsException;
+import com.jsp.clickNBuy.security.JwtUtil;
 import com.jsp.clickNBuy.service.AuthService;
 import com.jsp.clickNBuy.util.EmailSender;
 
@@ -30,6 +36,9 @@ public class AuthServiceImpl implements AuthService{
 	UserDao userDao;
 	PasswordEncoder encoder;
 	EmailSender emailSender;
+	AuthenticationManager authenticationManager;
+	UserDetailsService userDetailsService;
+	JwtUtil jwtUtil;
 
 	@Override
 	public ResponseDto register(UserDto userDto) {
@@ -112,6 +121,14 @@ public class AuthServiceImpl implements AuthService{
 
 	@Override
 	public ResponseDto login(LoginDto loginDto) {
-		return new ResponseDto("Login Success", loginDto);
+		authenticationManager
+		.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword()));
+
+		UserDetails userDetails = userDetailsService.loadUserByUsername(loginDto.getEmail());
+		String token = jwtUtil.generateToken(userDetails);
+		
+		Map<String, String> map = new HashMap<String, String>();
+		map.put("token", token);
+		return new ResponseDto("Login Success", map);
 	}
 }
