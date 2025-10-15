@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
