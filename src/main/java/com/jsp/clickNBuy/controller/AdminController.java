@@ -15,6 +15,7 @@ import com.jsp.clickNBuy.dto.ResponseDto;
 import com.jsp.clickNBuy.entity.Category;
 import com.jsp.clickNBuy.service.AdminService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 
 @RestController
@@ -25,24 +26,28 @@ public class AdminController {
 	AdminService adminService;
 
 	@PostMapping("/category")
+	@Operation(summary = "Add Category")
 	@ResponseStatus(value = HttpStatus.CREATED)
 	public ResponseDto addCategory(@RequestBody Category category) {
 		return adminService.addCategory(category);
 	}
 
 	@GetMapping("/category")
+	@Operation(summary = "Fetch All Categories")
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResponseDto viewCategories() {
 		return adminService.viewCategories();
 	}
 
 	@DeleteMapping("/category/{id}")
+	@Operation(summary = "Delete Category")
 	@ResponseStatus(value = HttpStatus.NO_CONTENT)
 	public ResponseDto deleteCategory(@PathVariable Long id) {
 		return adminService.deleteCategory(id);
 	}
 
 	@PutMapping("/category/{id}")
+	@Operation(summary = "Update Category")
 	@ResponseStatus(value = HttpStatus.OK)
 	public ResponseDto updateCategory(@PathVariable Long id, @RequestBody Category category) {
 		return adminService.updateCategory(id, category);

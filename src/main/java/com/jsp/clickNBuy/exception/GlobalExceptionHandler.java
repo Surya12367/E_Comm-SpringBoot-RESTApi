@@ -1,5 +1,6 @@
 package com.jsp.clickNBuy.exception;
 
+import java.nio.file.AccessDeniedException;
 import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.util.Map;
@@ -7,7 +8,6 @@ import java.util.concurrent.TimeoutException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -85,9 +85,9 @@ public class GlobalExceptionHandler {
 		return new ErrorDto(exception.toString());
 	}
 
-	@ExceptionHandler(AuthorizationDeniedException.class)
-	@ResponseStatus(code = HttpStatus.UNAUTHORIZED)
-	public ErrorDto handle(AuthorizationDeniedException exception) {
+	@ExceptionHandler(AccessDeniedException.class)
+	@ResponseStatus(code = HttpStatus.FORBIDDEN)
+	public ErrorDto handle(AccessDeniedException exception) {
 		return new ErrorDto(exception.toString());
 	}
 }
