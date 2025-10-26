@@ -30,6 +30,5 @@ public class Product {
 	@JsonIgnore
 	private boolean approved;
 	@ManyToOne
-	@JsonIgnore
 	User user;
 }
