@@ -8,6 +8,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -94,6 +95,12 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(OutOfStockException.class)
 	@ResponseStatus(code = HttpStatus.BAD_REQUEST)
 	public ErrorDto handle(OutOfStockException exception) {
+		return new ErrorDto(exception.getMessage());
+	}
+	
+	@ExceptionHandler(InternalAuthenticationServiceException.class)
+	@ResponseStatus(code = HttpStatus.FORBIDDEN)
+	public ErrorDto handle(InternalAuthenticationServiceException exception) {
 		return new ErrorDto(exception.getMessage());
 	}
 }
